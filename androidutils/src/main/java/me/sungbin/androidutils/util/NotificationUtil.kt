@@ -1,12 +1,25 @@
+/*
+ * Create by Ji Sungbin on 2021. 1. 30.
+ * Copyright (c) 2021. Sungbin Ji. All rights reserved. 
+ *
+ * AndroidUtils license is under the MIT license.
+ * SEE LICENSE : https://github.com/jisungbin/AndroidUtils/blob/master/LICENSE
+ */
+
+@file:Suppress("DEPRECATION")
+
+package me.sungbin.androidutils.util
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 
-@Suppress("DEPRECATION")
 object NotificationUtil {
+
     fun createChannel(context: Context, name: String, description: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getManager(context).createNotificationChannelGroup(
@@ -17,11 +30,10 @@ object NotificationUtil {
             )
 
             val channelMessage =
-                NotificationChannel(name, name, NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    this.description = description
-                    group = name
-                    enableVibration(false)
-                }
+                NotificationChannel(name, name, NotificationManager.IMPORTANCE_DEFAULT)
+            channelMessage.description = description
+            channelMessage.group = name
+            channelMessage.enableVibration(false)
             getManager(context).createNotificationChannel(channelMessage)
         }
     }
@@ -32,69 +44,150 @@ object NotificationUtil {
     fun showNormalNotification(
         context: Context,
         id: Int,
-        channelId: String,
         title: String,
         content: String,
         icon: Int,
         isOnGoing: Boolean
     ) {
-        getManager(context).notify(
-            id,
-            getNormalNotification(context, channelId, title, content, icon, isOnGoing).build()
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val builder = Notification.Builder(context, title)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+            getManager(context).notify(id, builder.build())
+        } else {
+            val builder = Notification.Builder(context)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+            getManager(context).notify(id, builder.build())
+        }
     }
 
     fun showInboxStyleNotification(
         context: Context,
         id: Int,
-        channelId: String,
         title: String,
         content: String,
-        boxText: List<String>,
+        boxText: Array<String>,
         icon: Int,
         isOnGoing: Boolean
     ) {
-        var builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(context, channelId)
-        } else Notification.Builder(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val builder = Notification.Builder(context, title)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+            val inboxStyle = Notification.InboxStyle()
+            inboxStyle.setBigContentTitle(title)
+            inboxStyle.setSummaryText(content)
 
-        builder = builder.setContentTitle(title)
-            .setContentText(content)
-            .setSmallIcon(icon)
-            .setAutoCancel(true)
-            .setOngoing(isOnGoing)
+            for (element in boxText) {
+                inboxStyle.addLine(element)
+            }
 
-        val inboxStyle = Notification.InboxStyle()
-        inboxStyle.setBigContentTitle(title)
-        inboxStyle.setSummaryText(content)
+            builder.style = inboxStyle
 
-        for (element in boxText) {
-            inboxStyle.addLine(element)
+            getManager(context).notify(id, builder.build())
+        } else {
+            val builder = Notification.Builder(context)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+            val inboxStyle = Notification.InboxStyle()
+            inboxStyle.setBigContentTitle(title)
+            inboxStyle.setSummaryText(content)
+
+            for (str in boxText) {
+                inboxStyle.addLine(str)
+            }
+
+            builder.style = inboxStyle
+
+            getManager(context).notify(id, builder.build())
         }
-
-        builder.style = inboxStyle
-
-        getManager(context).notify(id, builder.build())
     }
 
     fun getNormalNotification(
         context: Context,
-        channelId: String,
         title: String,
         content: String,
         icon: Int,
         isOnGoing: Boolean
     ): Notification.Builder {
-        var builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(context, channelId)
-        } else Notification.Builder(context)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(context, title)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+        } else {
+            Notification.Builder(context)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+        }
+    }
 
-        builder = builder.setContentTitle(title)
-            .setContentText(content)
-            .setSmallIcon(icon)
-            .setAutoCancel(true)
-            .setOngoing(isOnGoing)
+    fun getInboxStyleNotification(
+        context: Context,
+        title: String,
+        content: String,
+        boxText: Array<String>,
+        icon: Int,
+        isOnGoing: Boolean
+    ): Notification.Builder {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val builder = Notification.Builder(context, title)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
 
-        return builder
+            val inboxStyle = Notification.InboxStyle()
+            inboxStyle.setBigContentTitle(title)
+            inboxStyle.setSummaryText(content)
+
+            for (string in boxText) {
+                inboxStyle.addLine(string)
+            }
+
+            builder.style = inboxStyle
+            builder
+        } else {
+            val builder = Notification.Builder(context)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(icon)
+                .setAutoCancel(true)
+                .setOngoing(isOnGoing)
+
+            val inboxStyle = Notification.InboxStyle()
+            inboxStyle.setBigContentTitle(title)
+            inboxStyle.setSummaryText(content)
+
+            for (string in boxText) {
+                inboxStyle.addLine(string)
+            }
+
+            builder.style = inboxStyle
+            builder
+        }
+    }
+
+    fun deleteNotification(context: Context, id: Int) {
+        NotificationManagerCompat.from(context).cancel(id)
     }
 }
