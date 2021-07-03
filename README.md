@@ -8,7 +8,7 @@ AndroidUtils/blob/master/LICENSE"><img alt="license" src="https://img.shields.io
 
 ----
 
-# Download [![](https://jitpack.io/v/jisungbin/androidutils.svg)](https://jitpack.io/#jisungbin/androidutils)
+# ~~Download~~ [![](https://jitpack.io/v/jisungbin/androidutils.svg)](https://jitpack.io/#jisungbin/androidutils) [DEPRECATED]
 ```gradle
 repositories {
     maven { url 'https://jitpack.io' }
